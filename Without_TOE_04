@@ -1,0 +1,70 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Nov  5 15:16:01 2021
+
+@author: Mitarbeiter
+"""
+
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Nov  4 16:21:09 2021
+
+@author: Mitarbeiter
+"""
+
+import numpy as np
+from numba import jit
+import pandas as pd
+import matplotlib.pyplot as plt
+
+
+# Version 1 
+def bistability (X_th,S):
+    Delta = -4
+    mua = 25
+    r = 0.189
+    Tau_th = 0.03 * 1e-6  
+    Tau_ph = 154.73 # 154.7 ps
+    X_c = 1
+    Eta_in_i = 1362.372
+    Eta_a = 11184.029
+    Aeff = 1e-9
+    Eta_a = Eta_a ** 2 * 1e-9 *1e3
+    k = Eta_a
+    Eta_p = Eta_in_i ** 2 * 1e-9 * 1e3
+    a = r
+    b = X_c/mua 
+    c = Delta
+    d = -1
+    e = X_c
+    f = ((X_th * Tau_th) /(2*Tau_ph))*r
+    g = ((X_th * Tau_th) /(2*Tau_ph)) * 2* X_c / mua
+    p = [(g**2),(2*f*g)+(2*e*g),(2*e*f)+(2*d*g)+(e**2)+(f**2)+(b**2),(2*d*f)+(2*d*e)+(2*g*c)+(2*a*b),(2*c*f) + (2*e*c)*(d**2)+(2*b)+(a**2),(2*c*d)+(2*a),(c**2) + (1), -S]
+    Solution = np.roots(p)
+    solution1 = np.array( [ num for num in Solution if np.angle(num) == 0 ])
+    print(solution1)
+    x = len(solution1)
+    #print(solution1)
+    return (x)
+    #return (solution1[0])
+
+X_th = np.linspace(0, 1,500)       # The pump power as control power
+Delta_pump = np.linspace(0,10,500)       # The pump power as control power
+Pump1_powers =np.linspace(0,50,1200)       # The pump power as control power
+z = np.empty((len(X_th),len(Pump1_powers)))
+
+for i in range(0,len(X_th)):
+    for j in range(0,len(Pump1_powers)):
+        z[i][j] = abs(bistability(X_th[i],Pump1_powers[j]))
+
+X, Y = np.meshgrid(Pump1_powers,X_th)
+plt.figure(1)
+Z = z        
+plt.contourf(X, Y, Z, cmap='RdGy')
+plt.ylabel(r"TOE coefficient $\Chi_{th}$")
+plt.xlabel(r"Pump power $\left| \bar{S} \right|^{2}$")
+plt.title(r"Number of the possible steady states")
+plt.colorbar()
+plt.savefig("Bistability analysis 31.png", dpi = 1000)
+plt.show()
+
