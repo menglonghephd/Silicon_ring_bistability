@@ -1,0 +1,62 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Nov  4 16:21:09 2021
+
+@author: Mitarbeiter
+"""
+
+import numpy as np
+from numba import jit
+import pandas as pd
+import matplotlib.pyplot as plt
+
+
+# Version 1 
+def bistability (X_c,S):
+    Delta = -1
+    mua = 25
+    r = 0.189
+    Tauc = 20e-12
+    X_th = 0.34
+    Tau_th = 0.03 * 1e-6  
+    Tau_ph = 1.5473e-10 # 154.7 ps 
+    Eta_in_i = 1362.372
+    Eta_a = 11184.029
+    Aeff = 1e-9
+    Eta_a = Eta_a ** 2 * 1e-9 *1e3
+    k = Eta_a
+    Eta_p = Eta_in_i ** 2 * 1e-9 * 1e3
+    a = r
+    b = X_c/mua 
+    c = Delta
+    d = -1
+    e = X_c
+    p = [(b**2)+(e**2),((2*b*a) + (2*d*e)), (d**2 + (b*2) +(2*c*e) +(a**2)), (2*a+ (2*c*d)), (c**2 +1), -S]
+    Solution = np.roots(p)
+    solution1 = np.array( [ num for num in Solution if np.angle(num) == 0 ])
+    print(solution1)
+    x = len(solution1)
+    #print(solution1)
+    return (x)
+    #return (solution1[0])
+
+X_c = np.linspace(0,10,100)       # The pump power as control power
+Delta_pump = np.linspace(0,10,100)       # The pump power as control power
+Pump1_powers =np.linspace(0,50,1200)       # The pump power as control power
+z = np.empty((len(Delta_pump),len(Pump1_powers)))
+
+for i in range(0,len(X_c)):
+    for j in range(0,len(Pump1_powers)):
+        z[i][j] = abs(bistability(X_c[i],Pump1_powers[j]))
+
+X, Y = np.meshgrid(Pump1_powers,X_c)
+plt.figure(1)
+Z = z        
+plt.contourf(X, Y, Z, cmap='RdGy')
+plt.ylabel(r"Free-carrier dispersion $\X_{c}$")
+plt.xlabel(r"Pump power $\left| \bar{S} \right|^{2}$")
+plt.title(r"Gain of the circulating field")
+plt.colorbar()
+plt.savefig("Steady state value 31.png", dpi = 1000)
+plt.show()
+
